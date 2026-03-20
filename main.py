@@ -41,13 +41,23 @@ def fetch_all_rows(table_name, page_size=100):
 
 
 def out_data(data):
+    sum = 0
+    print("---------------------------------------------------------------------------------")
+    print(f"|{'№ п.п':^10}|{'Дата':^12}|{'Тип':^12}|{'Время':^10}|{'Дистанция':^10}|{'Примечание':^20}|") 
+    print("---------------------------------------------------------------------------------")
     for index, rec in enumerate(data):
         date = rec["date"]
         type1 = rec["type"]
         duration = rec["duration"]
+        if duration==None:
+            duration = "-"
         distance = rec["distance"]
         notes = rec["notes"]
-        print(f"{index}, {date}, {type1}, {duration}, {distance}, {notes}") 
+        if notes==None:
+            notes = "-"
+        print(f"|{index:^10}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^20}|") 
+        sum += distance
+    print(f"Тринеровок: {len(data)}, Всего: {sum} км")
     print()
 
 
