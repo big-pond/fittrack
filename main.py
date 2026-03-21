@@ -15,6 +15,13 @@ supabase: Client = create_client(url, key)
 # 1. Logging in (the user's token is saved in the client automatically)
 supabase.auth.sign_in_with_password({"email": "py99@mail.ru", "password": password})
 
+RUNNING = 'бег'
+WALKING = 'ходьба'
+CYCLING = 'велосипед' 
+EXERCISE_BIKE = 'велотренажер' 
+SWIMMING = 'плавание' 
+SKIING = 'лыжи'
+
 def fetch_all_rows(table_name, page_size=100):
     all_data = []
     start = 0
@@ -38,26 +45,59 @@ def fetch_all_rows(table_name, page_size=100):
         start += page_size
     
     return all_data
-
+# type = ['бег', 'ходьба', 'велосипед', 'велотренажер', 'плавание', 'лыжи')
 
 def out_data(data):
-    sum = 0
+    sum = 0.0
+    running =  walking =  cycling = exercise_bike = swimming = skiing = 0.0
+    running_count =  walking_count =  cycling_count = exercise_bike_count = swimming_count = skiing_count = 0
     print("---------------------------------------------------------------------------------")
-    print(f"|{'№ п.п':^10}|{'Дата':^12}|{'Тип':^12}|{'Время':^10}|{'Дистанция':^10}|{'Примечание':^20}|") 
+    print(f"|{'N пп':^6}|{'Дата':^12}|{'Тип':^12}|{'Время':^10}|{'Дистанция':^10}|{'Примечание':^24}|") 
     print("---------------------------------------------------------------------------------")
     for index, rec in enumerate(data):
         date = rec["date"]
         type1 = rec["type"]
         duration = rec["duration"]
-        if duration==None:
-            duration = "-"
         distance = rec["distance"]
         notes = rec["notes"]
+        if type1==RUNNING:
+            running += distance
+            running_count += 1
+        elif type1==WALKING:
+            walking += distance 
+            walking_count += 1
+        elif type1==CYCLING:
+            cycling += distance 
+            cycling_count += 1
+        elif type1==EXERCISE_BIKE:
+            exercise_bike += distance 
+            exercise_bike_count += 1
+        elif type1==SWIMMING:
+            swimming += distance 
+            swimming_count += 1
+        elif type1==SKIING:
+            skiing += distance 
+            skiing_count += 1
+        sum += distance
+        if duration==None:
+            duration = "-"
         if notes==None:
             notes = "-"
-        print(f"|{index:^10}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^20}|") 
-        sum += distance
-    print(f"Тринеровок: {len(data)}, Всего: {sum} км")
+        print(f"|{index:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^20}|")
+    print(f"Тринеровок: {len(data)}, дистанция: {sum} км")
+    if running_count>0:
+        print(f"  {RUNNING}: {running_count}, дистанция: {running} км")
+    if walking_count>0:
+        print(f"  {WALKING}: {walking_count}, дистанция: {walking} км")
+    if cycling_count>0:
+        print(f"  {CYCLING}: {cycling_count}, дистанция: {cycling} км")
+    if exercise_bike_count>0:
+        print(f"  {EXERCISE_BIKE}: {exercise_bike_count}, дистанция: {exercise_bike} км")
+    if swimming_count>0:
+        print(f"  {SWIMMING}: {swimming_count}, дистанция: {swimming} км")
+    if skiing_count>0:
+        print(f"  {SKIING}: {skiing_count}, дистанция: {skiing} км")
+
     print()
 
 
