@@ -22,6 +22,13 @@ EXERCISE_BIKE = 'велотренажер'
 SWIMMING = 'плавание' 
 SKIING = 'лыжи'
 
+def min_to_hms(minutes):
+    mn = float(minutes)
+    h= int(mn//60)
+    m = int(mn - h*60)
+    s = int(round((mn - h*60 - m)*60))
+    return f'{h:02}:{m:02}:{s:02}'
+
 def fetch_all_rows(table_name, page_size=100):
     all_data = []
     start = 0
@@ -45,14 +52,13 @@ def fetch_all_rows(table_name, page_size=100):
         start += page_size
     
     return all_data
-# type = ['бег', 'ходьба', 'велосипед', 'велотренажер', 'плавание', 'лыжи')
 
 def out_data(data):
     sum = 0.0
     running =  walking =  cycling = exercise_bike = swimming = skiing = 0.0
     running_count =  walking_count =  cycling_count = exercise_bike_count = swimming_count = skiing_count = 0
     print("---------------------------------------------------------------------------------")
-    print(f"|{'N пп':^6}|{'Дата':^12}|{'Тип':^12}|{'Время':^10}|{'Дистанция':^10}|{'Примечание':^24}|") 
+    print(f"|{'N пп':^6}|{'Дата':^12}|{'Тип':^12}|{'Время, мин':^10}|{'Дистанция':^10}|{'Примечание':^24}|") 
     print("---------------------------------------------------------------------------------")
     for index, rec in enumerate(data):
         date = rec["date"]
@@ -79,24 +85,26 @@ def out_data(data):
             skiing += distance 
             skiing_count += 1
         sum += distance
-        if duration==None:
+        if duration:
+            duration = min_to_hms(duration)
+        else:
             duration = "-"
         if notes==None:
             notes = "-"
         print(f"|{index:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^20}|")
-    print(f"Тринеровок: {len(data)}, дистанция: {sum} км")
+    print(f"Тринеровок: {len(data)}, дистанция: {sum:9.1f} км")
     if running_count>0:
-        print(f"  {RUNNING}: {running_count}, дистанция: {running} км")
+        print(f"  {RUNNING}: {running_count}, дистанция: {running:9.1f} км")
     if walking_count>0:
-        print(f"  {WALKING}: {walking_count}, дистанция: {walking} км")
+        print(f"  {WALKING}: {walking_count}, дистанция: {walking:9.1f} км")
     if cycling_count>0:
-        print(f"  {CYCLING}: {cycling_count}, дистанция: {cycling} км")
+        print(f"  {CYCLING}: {cycling_count}, дистанция: {cycling:9.1f} км")
     if exercise_bike_count>0:
-        print(f"  {EXERCISE_BIKE}: {exercise_bike_count}, дистанция: {exercise_bike} км")
+        print(f"  {EXERCISE_BIKE}: {exercise_bike_count}, дистанция: {exercise_bike:9.1f} км")
     if swimming_count>0:
-        print(f"  {SWIMMING}: {swimming_count}, дистанция: {swimming} км")
+        print(f"  {SWIMMING}: {swimming_count}, дистанция: {swimming:9.1f} км")
     if skiing_count>0:
-        print(f"  {SKIING}: {skiing_count}, дистанция: {skiing} км")
+        print(f"  {SKIING}: {skiing_count}, дистанция: {skiing:9.1f} км")
 
     print()
 
@@ -143,4 +151,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
