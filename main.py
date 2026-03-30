@@ -2,18 +2,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from datetime import datetime
-
-# Load variables from file .env to environment
-load_dotenv()
-
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-password: str = os.environ.get("USER_PASSWORD")
-
-supabase: Client = create_client(url, key)
-
-# 1. Logging in (the user's token is saved in the client automatically)
-supabase.auth.sign_in_with_password({"email": "py99@mail.ru", "password": password})
+from pathlib import Path
 
 RUNNING = 'бег'
 WALKING = 'ходьба'
@@ -21,6 +10,22 @@ CYCLING = 'велосипед'
 EXERCISE_BIKE = 'велотренажер' 
 SWIMMING = 'плавание' 
 SKIING = 'лыжи'
+
+def connect_to_db():
+    # Load variables from file .env to environment
+    load_dotenv()
+
+    url: str = os.environ.get("SUPABASE_URL")
+    key: str = os.environ.get("SUPABASE_KEY")
+    password: str = os.environ.get("USER_PASSWORD")
+
+    supabase: Client = create_client(url, key)
+
+    # 1. Logging in (the user's token is saved in the client automatically)
+    supabase.auth.sign_in_with_password({"email": "py99@mail.ru", "password": password})
+
+    return supabase
+
 
 def min_to_hms(minutes):
     mn = float(minutes)
@@ -57,9 +62,9 @@ def out_data(data):
     sum = 0.0
     running =  walking =  cycling = exercise_bike = swimming = skiing = 0.0
     running_count =  walking_count =  cycling_count = exercise_bike_count = swimming_count = skiing_count = 0
-    print("---------------------------------------------------------------------------------")
+    print("-" * 81)
     print(f"|{'N пп':^6}|{'Дата':^12}|{'Тип':^12}|{'Время, мин':^10}|{'Дистанция':^10}|{'Примечание':^24}|") 
-    print("---------------------------------------------------------------------------------")
+    print("-" * 81)
     for index, rec in enumerate(data):
         date = rec["date"]
         type1 = rec["type"]
@@ -91,7 +96,7 @@ def out_data(data):
             duration = "-"
         if notes==None:
             notes = "-"
-        print(f"|{index:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^20}|")
+        print(f"|{index:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^24}|")
     print(f"Тринеровок: {len(data)}, дистанция: {sum:9.1f} км")
     if running_count>0:
         print(f"  {RUNNING}: {running_count}, дистанция: {running:9.1f} км")
@@ -112,23 +117,16 @@ def out_data(data):
 def main():
     print("Hello from fittrack!")
     while True:
-        code = input("Input 1-all data; 2-year: ")
-        if code=="1":
-            try:
-                all_record = fetch_all_rows("workouts")
-                for record in all_record:
-                    print(record)
-                print(f"Записей: {len(all_record)}")
-            except Exception as e:
-                print(f"Ошибка: {e}")
+        code = input("Input 2-data for the year ")
 
-        elif code=="2":
+        if code=="2":
             year = int(input("Input year: "))
 
             try:
                 start_date = f"{year}-01-01"
                 end_date = f"{year}-12-31"
-    
+                supabase = connect_to_db()
+
                 response = supabase.table('workouts')\
                 .select('date,type,duration,distance,notes')\
                 .gte('date', start_date)\
