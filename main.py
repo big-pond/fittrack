@@ -34,7 +34,7 @@ def min_to_hms(minutes):
     s = int(round((mn - h*60 - m)*60))
     return f'{h:02}:{m:02}:{s:02}'
 
-def fetch_all_rows(table_name, page_size=100):
+def fetch_all_rows(supabase, table_name, page_size=100):
     all_data = []
     start = 0
 
@@ -117,8 +117,31 @@ def out_data(data):
 def main():
     print("Hello from fittrack!")
     while True:
-        code = input("Input 2-data for the year ")
+        code = input("Input 1-amounts by year; 2-data for the year: ")
+        
+        if code=="1":
+            supabase = connect_to_db()
+            # Получаем минимальную дату
+            min_res = supabase.table("workouts") \
+                .select("date") \
+                .order("date", desc=False) \
+                .limit(1) \
+                .single() \
+                .execute()
 
+            # Получаем максимальную дату
+            max_res = supabase.table("workouts") \
+                .select("date") \
+                .order("date", desc=True) \
+                .limit(1) \
+                .single() \
+                .execute()
+
+            # Извлекаем год с помощью datetime
+            min_year = datetime.fromisoformat(min_res.data['date']).year
+            max_year = datetime.fromisoformat(max_res.data['date']).year
+
+            print(f"Диапазон лет: {min_year} - {max_year}")
         if code=="2":
             year = int(input("Input year: "))
 
