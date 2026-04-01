@@ -142,7 +142,7 @@ def main():
             max_year = datetime.fromisoformat(max_res.data['date']).year
 
             print(f"Диапазон лет: {min_year} - {max_year}")
-        if code=="2":
+        elif code=="2":
             year = int(input("Input year: "))
 
             try:
