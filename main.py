@@ -35,28 +35,34 @@ def min_to_hms(minutes):
     return f'{h:02}:{m:02}:{s:02}'
 
 def fetch_all_rows(supabase, table_name, page_size=100):
-    all_data = []
+    data = []
     start = 0
 
-    while True:
-        response = supabase.table(table_name) \
-            .select("*") \
-            .range(start, start + page_size - 1) \
-            .execute()
-        
-        # If there is no more data then exit
-        if not response.data:
-            break
+    try:
+        while True:
+            response = supabase.table(table_name) \
+                .select('"date", "type", "duration", "distance", "notes"') \
+                .order("date") \
+                .range(start, start + page_size - 1) \
+                .execute()
             
-        all_data.extend(response.data)
-        
-        # If less was returned than requested, this is the last page
-        if len(response.data) < page_size:
-            break
+            # If there is no more data then exit
+            if not response.data:
+                break
+                
+            data.extend(response.data)
             
-        start += page_size
+            # If less was returned than requested, this is the last page
+            if len(response.data) < page_size:
+                break
+                
+            start += page_size
+        
+    except Exception as e:
+        print(f"Error: {e}")
     
-    return all_data
+    return data
+
 
 def out_data(data):
     sum = 0.0
@@ -114,10 +120,192 @@ def out_data(data):
     print()
 
 
+def create_year_data(year: int):
+    year_data = {
+                    "year": year,
+                    "run":  0.0,
+                    "run_count": 0,
+                    "walk": 0.0,
+                    "walk_count": 0,
+                    "cycl": 0.0,
+                    "cycl_count": 0,
+                    "exbk": 0.0,
+                    "exbk_count": 0,
+                    "swim": 0.0,
+                    "swim_count": 0,
+                    "ski":  0.0,
+                    "ski_count": 0,
+                }
+    return year_data
+
+
+def find_year_data(year_list, year):
+    year_data = None
+    for elem in year_list:
+        if elem["year"] == year:
+            year_data = elem
+            break
+    if year_data is None: 
+        year_data = create_year_data(year)
+        year_list.append(year_data)
+
+    return year_data
+
+
+def add_workout_data(rec, year_data):
+    distance = rec["distance"]
+    if rec["type"] == RUNNING:
+        year_data["run"] += distance
+        year_data["run_count"] += 1
+    elif rec["type"] == WALKING:
+        year_data["walk"] += distance
+        year_data["walk_count"] += 1
+    elif rec["type"] == CYCLING:
+        year_data["cycl"] += distance
+        year_data["cycl_count"] += 1
+    elif rec["type"] == EXERCISE_BIKE:
+        year_data["exbk"] += distance
+        year_data["exbk_count"] += 1
+    elif rec["type"] == SWIMMING:
+        year_data["swim"] += distance
+        year_data["swim_count"] += 1
+    elif rec["type"] == SKIING:
+        year_data["ski"] += distance
+        year_data["ski_count"] += 1
+
+
+def sum_workout_data(summ, year_data):
+    summ["run"] += year_data["run"]
+    summ["run_count"] += year_data["run_count"]
+    summ["walk"] += year_data["walk"]
+    summ["walk_count"] += year_data["walk_count"]
+    summ["cycl"] +=  year_data["cycl"]
+    summ["cycl_count"] += year_data["cycl_count"]
+    summ["exbk"] += year_data["exbk"]
+    summ["exbk_count"] += year_data["exbk_count"]
+    summ["swim"] += year_data["swim"]
+    summ["swim_count"] += year_data["swim_count"]
+    summ["ski"] += year_data["ski"]
+    summ["ski_count"] += year_data["ski_count"]
+
+
+def counting_all_data_by_year(data):
+    year_list = []
+    for rec in data:
+        year = datetime.fromisoformat(rec['date']).year
+        if len(year_list)==0:
+            year_data = create_year_data(year)
+            year_list.append(year_data)
+            add_workout_data(rec, year_data)
+        year_data = find_year_data(year_list, year)
+        add_workout_data(rec, year_data)
+    year_list.sort(key=lambda x: x['year'])
+    summ = create_year_data(0)
+    dist = 'Дист,км'
+    n = 'Кол'
+    print('-'*86)
+    print(f"|{'Год':^6}|{'Бег':^12}|{'Ходьба':^12}|{'Лыжи':^12}|{'Велосипед':^12}|{'Велотренажер':^12}|{'Плавание':^12}|") 
+    print(f"|{'':^6}|{dist:^7}|{n:^4}|{dist:^7}|{n:^4}|{dist:^7}|{n:^4}|{dist:^7}|{n:^4}|{dist:^7}|{n:^4}|{dist:^7}|{n:^4}|") 
+    print('-'*86)
+    for e in year_list: 
+        sum_workout_data(summ, e)
+        run = e["run"]
+        run_count = e["run_count"]
+        walk = e["walk"]
+        walk_count = e["walk_count"]
+        ski = e["ski"]
+        ski_count = e["ski_count"]
+        cycl = e["cycl"]
+        cycl_count = e["cycl_count"]
+        exbk = e["exbk"]
+        exbk_count = e["exbk_count"]
+        swim = e["swim"]
+        swim_count = e["swim_count"]
+        runf="7.1f"
+        walf="7.1f"
+        skif="7.1f"
+        cycf="7.1f"
+        exbf="7.1f"
+        swif="7.1f"
+        if run==0:
+            run = '-'
+            run_count = '-'
+            runf="^7"
+        if walk==0:
+            walk = '-'
+            walk_count = '-'
+            walf="^7"
+        if ski==0:
+            ski = '-'
+            ski_count = '-'
+            skif="^7"
+        if cycl==0:
+            cycl = '-'
+            cycl_count = '-'
+            cycf="^7"
+        if exbk==0:
+            exbk = '-'
+            exbk_count = '-'
+            exbf="^7"
+        if swim==0:
+            swim = '-'
+            swim_count = '-'
+            swif="^7"
+        print(f"|{e["year"]:^6}|{run:{runf}}|{run_count:>4}|{walk:{walf}}|{walk_count:>4}|{ski:{skif}}|{ski_count:>4}|"
+              f"{cycl:{cycf}}|{cycl_count:>4}|{exbk:{exbf}}|{exbk_count:>4}|{swim:{swif}}|{swim_count:>4}|") 
+
+    print('-'*86)
+    run = summ["run"]
+    run_count = summ["run_count"]
+    walk = summ["walk"]
+    walk_count = summ["walk_count"]
+    ski = summ["ski"]
+    ski_count = summ["ski_count"]
+    cycl = summ["cycl"]
+    cycl_count = summ["cycl_count"]
+    exbk = summ["exbk"]
+    exbk_count = summ["exbk_count"]
+    swim = summ["swim"]
+    swim_count = summ["swim_count"]
+    runf="7.1f"
+    walf="7.1f"
+    skif="7.1f"
+    cycf="7.1f"
+    exbf="7.1f"
+    swif="7.1f"
+    if run==0:
+        run = '-'
+        run_count = '-'
+        runf="^7"
+    if walk==0:
+        walk = '-'
+        walk_count = '-'
+        walf="^7"
+    if ski==0:
+        ski = '-'
+        ski_count = '-'
+        skif="^7"
+    if cycl==0:
+        cycl = '-'
+        cycl_count = '-'
+        cycf="^7"
+    if exbk==0:
+        exbk = '-'
+        exbk_count = '-'
+        exbf="^7"
+    if swim==0:
+        swim = '-'
+        swim_count = '-'
+        swif="^7"
+    print(f"|{"Итого":^6}|{run:{runf}}|{run_count:>4}|{walk:{walf}}|{walk_count:>4}|{ski:{skif}}|{ski_count:>4}|"
+            f"{cycl:{cycf}}|{cycl_count:>4}|{exbk:{exbf}}|{exbk_count:>4}|{swim:{swif}}|{swim_count:>4}|") 
+    print()
+
+
 def main():
     print("Hello from fittrack!")
     while True:
-        code = input("Input 1-amounts by year; 2-data for the year: ")
+        code = input("Input 1-range of years; 2-data for the year; 3-amounts by year: ")
         
         if code=="1":
             supabase = connect_to_db()
@@ -166,6 +354,11 @@ def main():
             except Exception as e:
                 print(f"Ошибка: {e}")
 
+        elif code=="3":
+            supabase = connect_to_db()
+            data = fetch_all_rows(supabase, "workouts")
+            if data:
+                counting_all_data_by_year(data)
         else:
             print("Exit")
             break
