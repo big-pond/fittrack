@@ -342,6 +342,7 @@ def main():
                 .select('date,type,duration,distance,notes')\
                 .gte('date', start_date)\
                 .lte('date', end_date)\
+                .order("date") \
                 .execute()
     
                 # Verification and output of results
