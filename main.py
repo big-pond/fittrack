@@ -102,7 +102,7 @@ def out_data(data):
             duration = "-"
         if notes==None:
             notes = "-"
-        print(f"|{index:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^24}|")
+        print(f"|{index+1:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^24}|")
     print(f"Тринеровок: {len(data)}, дистанция: {sum:9.1f} км")
     if running_count>0:
         print(f"  {RUNNING}: {running_count}, дистанция: {running:9.1f} км")
