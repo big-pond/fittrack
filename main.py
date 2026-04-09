@@ -102,20 +102,21 @@ def out_data(data):
             duration = "-"
         if notes==None:
             notes = "-"
+            sdist = "дистанция"
         print(f"|{index+1:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^24}|")
-    print(f"Тринеровок: {len(data)}, дистанция: {sum:9.1f} км")
+    print(f"Тринеровок: {len(data)}, {sdist}: {sum:9.1f} км")
     if running_count>0:
-        print(f"  {RUNNING}: {running_count}, дистанция: {running:9.1f} км")
+        print(f"  {RUNNING}: {running_count}, {sdist}: {running:9.1f} км")
     if walking_count>0:
-        print(f"  {WALKING}: {walking_count}, дистанция: {walking:9.1f} км")
+        print(f"  {WALKING}: {walking_count}, {sdist}: {walking:9.1f} км")
     if cycling_count>0:
-        print(f"  {CYCLING}: {cycling_count}, дистанция: {cycling:9.1f} км")
+        print(f"  {CYCLING}: {cycling_count}, {sdist}: {cycling:9.1f} км")
     if exercise_bike_count>0:
-        print(f"  {EXERCISE_BIKE}: {exercise_bike_count}, дистанция: {exercise_bike:9.1f} км")
+        print(f"  {EXERCISE_BIKE}: {exercise_bike_count}, {sdist}: {exercise_bike:9.1f} км")
     if swimming_count>0:
-        print(f"  {SWIMMING}: {swimming_count}, дистанция: {swimming:9.1f} км")
+        print(f"  {SWIMMING}: {swimming_count}, {sdist}: {swimming:9.1f} км")
     if skiing_count>0:
-        print(f"  {SKIING}: {skiing_count}, дистанция: {skiing:9.1f} км")
+        print(f"  {SKIING}: {skiing_count}, {sdist}: {skiing:9.1f} км")
 
     print()
 
@@ -299,13 +300,14 @@ def counting_all_data_by_year(data):
         swif="^7"
     print(f"|{"Итого":^6}|{run:{runf}}|{run_count:>4}|{walk:{walf}}|{walk_count:>4}|{ski:{skif}}|{ski_count:>4}|"
             f"{cycl:{cycf}}|{cycl_count:>4}|{exbk:{exbf}}|{exbk_count:>4}|{swim:{swif}}|{swim_count:>4}|") 
+    print(f"Всего тренировок: {len(data)}")
     print()
 
 
 def main():
     print("Hello from fittrack!")
     while True:
-        code = input("Input 1-range of years; 2-data for the year; 3-amounts by year: ")
+        code = input("Введите 1-диапазон лет; 2-данные за год; 3-суммы по годам; 4-добавить: ")
         
         if code=="1":
             supabase = connect_to_db()
@@ -331,7 +333,7 @@ def main():
 
             print(f"Диапазон лет: {min_year} - {max_year}")
         elif code=="2":
-            year = int(input("Input year: "))
+            year = int(input("Введите год: "))
 
             try:
                 start_date = f"{year}-01-01"
@@ -360,8 +362,30 @@ def main():
             data = fetch_all_rows(supabase, "workouts")
             if data:
                 counting_all_data_by_year(data)
+        elif code=="4":
+            try:
+                dt = input("Введите дату 'ГГГГ-ММ-ДД':")
+                tp = input(f"Введите тип {RUNNING}-1, {WALKING}-2, {CYCLING}-3, {EXERCISE_BIKE}-4, {SWIMMING}-5, {SKIING}-6: ")
+                ds = float(input("Введите дистанцию, км: "))
+                dr = float(input("Длительность, мин: "))
+                nt = input("Примечание: ")
+
+                rec = {
+                    "date": dt,
+                    "type": tp,
+                    "distance": ds,
+                    "duration": dr,
+                    "notes": nt
+                }
+                supabase = connect_to_db()
+                response = supabase.table("workouts").insert(rec).execute()
+                print(f"\n✅ Успешно добавлено! ID записи: {response.data[0]['id']}")
+            except ValueError:
+                print("\n❌ Ошибка: Дистанция и время должны быть числами (через точку).")
+            except Exception as e:
+                print(f"\n❌ Ошибка базы данных: {e}")
         else:
-            print("Exit")
+            print("Выход")
             break
 
 
