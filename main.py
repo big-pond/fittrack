@@ -102,8 +102,8 @@ def out_data(data):
             duration = "-"
         if notes==None:
             notes = "-"
-            sdist = "дистанция"
         print(f"|{index+1:^6}|{date:^12}|{type1:^12}|{duration:^10}|{distance:10.2f}|{notes:^24}|")
+    sdist = "дистанция"
     print(f"Тринеровок: {len(data)}, {sdist}: {sum:9.1f} км")
     if running_count>0:
         print(f"  {RUNNING}: {running_count}, {sdist}: {running:9.1f} км")
@@ -364,20 +364,35 @@ def main():
                 counting_all_data_by_year(data)
         elif code=="4":
             try:
+                typew = ""
                 dt = input("Введите дату 'ГГГГ-ММ-ДД':")
                 tp = input(f"Введите тип {RUNNING}-1, {WALKING}-2, {CYCLING}-3, {EXERCISE_BIKE}-4, {SWIMMING}-5, {SKIING}-6: ")
                 ds = float(input("Введите дистанцию, км: "))
                 dr = float(input("Длительность, мин: "))
                 nt = input("Примечание: ")
+                if tp=='1':
+                    typew = RUNNING
+                if tp=='2':
+                    typew = WALKING
+                if tp=='3':
+                    typew = CYCLING
+                if tp=='4':
+                    typew = EXERCISE_BIKE
+                if tp=='5':
+                    typew = SWIMMING
+                if tp=='6':
+                    typew = SKIING
 
+                supabase = connect_to_db()
+                user_id = supabase.auth.get_user().user.id
                 rec = {
+                    "user_id": user_id, 
                     "date": dt,
-                    "type": tp,
+                    "type": typew,
                     "distance": ds,
                     "duration": dr,
                     "notes": nt
                 }
-                supabase = connect_to_db()
                 response = supabase.table("workouts").insert(rec).execute()
                 print(f"\n✅ Успешно добавлено! ID записи: {response.data[0]['id']}")
             except ValueError:
@@ -392,3 +407,10 @@ def main():
 if __name__ == "__main__":
 
     main()
+
+# Пример для Python
+# user_id = supabase.auth.get_user().user.id
+# supabase.table("workouts").insert({
+#     "user_id": user_id, 
+#     "name": "Morning Run"
+# }).execute()
