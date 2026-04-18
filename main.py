@@ -407,10 +407,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
-# Пример для Python
-# user_id = supabase.auth.get_user().user.id
-# supabase.table("workouts").insert({
-#     "user_id": user_id, 
-#     "name": "Morning Run"
-# }).execute()
